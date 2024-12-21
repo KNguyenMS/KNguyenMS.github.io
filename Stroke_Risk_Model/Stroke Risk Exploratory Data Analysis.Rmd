@@ -1,0 +1,169 @@
+---
+title: "Stroke Risk Exploratory Data Analysis"
+author: "Kevin Nguyen"
+output: word_document
+---
+
+**1. How to import and clean my data**
+
+The three data sets that I have gathered from online resources all contain patients who have either had or have not had a stroke. I will import each data set using the read.csv() and will then transform some of the values in my data sets to 1 and 0 to be consistent with other data sets. For example, in two of the data sets, gender is indicated using 0 or 1 whereas in the last data set it is 'Male' or 'Female'. Other columns that use 1 or 0 can remain as they are because they indicate the presence of that predictor such as hypertension or heart_disease. 
+
+My first two data sets showed the actual age of each patient, whereas in my third data set they used a categorical model to identify age using the below ranges. 
+
+Value 1 = Age 18-24
+
+Value 2 = Age 25 to 29
+
+Value 3 = Age 30 to 34
+
+Value 4	= Age 35 to 39
+
+Value 5 =	Age 40 to 44
+
+Value 6 =	Age 45 to 49
+
+Value 7	= Age 50 to 54
+
+Value 8 =	Age 55 to 59
+
+Value 9 =	Age 60 to 64
+
+Value 10 = Age 65 to 69
+
+Value 11 = Age 70 to 74
+
+Value 12 = Age 75 to 79
+
+Value 13 = Age 80 or older
+ 
+
+Therefore, in order to stay consistent across data sets I created new columns in df_1 and df_2 for age_category which matches the logic used for the the values df_3. Seeing as how the patient must be at least 18 years old to get an age category value I removed records for patients that are less than 18 years old. Thankfully, this was a small subset of the population in my first and second data sets. 
+
+Once I have my 3 data frames, I will combine similar fields into one combined data set that has patients from all 3 sources of data. There are some fields that are only in two of the datasets so a separate dataset will be created containing patients from two datasets. I will use the cbind() function to combine the datasets.
+
+**2.What does the final data set look like?:**
+
+```{r, echo=FALSE}
+
+library('knitr')
+library('tidyr')
+
+df_1 <- read.csv('Stroke dataset 1.csv', header = TRUE)
+
+df_2 <- read.csv('Stroke dataset 2.csv', header = TRUE)
+
+df_3 <- read.csv('Stroke dataset 3.csv', header = TRUE)
+
+#transform gender to 0 and 1 (male = 1, female = 0)
+
+df_1 <- transform(df_1, 'gender'= ifelse(gender=='Male', 1, 0))
+
+df_2 <- transform(df_2, 'gender'= ifelse(gender=='Male', 1, 0))
+
+# transform age values to be categorical
+
+df_1$age_category <- cut(df_1$age,
+                         breaks = c(18,24,29,34,39,44,49,54,59,64,69,74,79,130),
+                         labels = c('1','2','3','4','5','6','7','8','9','10','11','12','13'))
+                         
+
+df_2$age_category <- cut(df_2$age,
+                         breaks = c(18,24,29,34,39,44,49,54,59,64,69,74,79,130),
+                         labels = c('1','2','3','4','5','6','7','8','9','10','11','12','13'))
+
+
+# only keeps records where age > 17. 
+df_1 <- dplyr::filter(df_1,age > 17)
+df_2 <- dplyr::filter(df_2,age > 17)
+
+
+# create subset of the data frames
+df_1.subset <- subset(df_1, select = c(age_category, gender, bmi, stroke))
+df_2.subset <- subset(df_2, select = c(age_category, gender, bmi, stroke))
+df_3.subset <- subset(df_3, select = c(Age, Sex, BMI, Stroke))
+
+#Rename columns for subsets
+names(df_3.subset)[names(df_3.subset) == "Age"] <- "age_category"
+names(df_3.subset)[names(df_3.subset) == "Sex"] <- "gender"
+names(df_3.subset)[names(df_3.subset) == "BMI"] <- "bmi"
+names(df_3.subset)[names(df_3.subset) == "Stroke"] <- "stroke"
+
+#union data sets
+df_main1 <- rbind(df_1.subset, df_2.subset, df_3.subset)
+
+# df_main1f <- df_main1
+
+# df_main1f <- transform(df_main1f, "stroke"= ifelse(stroke=="1", "Yes", "No"))
+
+#create subsets for the first two data sets with different variables 
+
+df_1.subset2 = subset(df_1, select = c(age, gender, hypertension, heart_disease, avg_glucose_level, stroke))
+
+df_2.subset2 = subset(df_2, select = c(age, gender, hypertension, heart_disease, avg_glucose_level, stroke))
+
+
+# union the 2nd subsets 
+
+df_main2 <- rbind(df_1.subset2, df_2.subset2)
+
+# df_main2f <- transform(df_main2, "stroke"= ifelse(stroke=="1", "Yes", "No"))
+
+
+
+kable(head(df_main1),caption = "Three Combined Data sets")
+str(df_main1)
+summary(df_main1)
+
+kable(head(df_main2),caption = "Two Combined Data sets")
+str(df_main2)
+summary(df_main2)
+
+
+```
+
+
+
+**3.Questions for future steps**
+
+In regards to cleaning my data and getting them all into one final data set I believe that I am all set. No further cleaning needs to be done. 
+
+
+**4.What information is not self-evident?**
+
+At the moment it is still not evident if I have the correct variables for my analysis. There are predictors that I am unable to use as they are not present in all the data sets, and I'd rather avoid bias by selecting a variable that exists only in one of the data sets. 
+
+
+
+**5.What are different ways you could look at this data?**
+
+I intend to use graphs in order to visualize the data better. I'll also use logistic regression and correlation testing to see how each of the variables correlate to one antoher. 
+
+
+
+**6.How do you plan to slice and dice the data?**
+
+I've already sliced my data into two main data frames. The first one containing data from all three data sets. The second main data frame I created only includes variables found in two of my sources of data. Therefore, I combined data from those two data sets into the second "main data frame". 
+
+
+
+**7.How could you summarize your data to answer key questions?**
+
+I will use the summary() function on my logistic regression models to identify predictors of stroke. 
+
+
+
+
+**8.What types of plots and tables will help you to illustrate the findings to your questions?**
+
+I am still contemplating this for now, but my plan is to use box plots to be able to visualize how certain predictors impact the presence of strokes. 
+
+
+**9.Do you plan on incorporating any machine learning techniques to answer your research questions? Explain.**
+
+I'll have to see what the best way to analyze my data is based on my variables. I may need to tinker with categorical variables as some analysis may require me to have the variable set as a numeric. 
+
+
+
+
+
+

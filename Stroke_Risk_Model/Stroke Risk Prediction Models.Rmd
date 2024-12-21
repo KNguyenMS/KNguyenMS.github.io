@@ -1,0 +1,405 @@
+---
+title: "Risk Stroke Prediction Model"
+author: "Kevin Nguyen"
+output: word_document
+---
+
+
+```{r, echo=FALSE}
+
+library('knitr')
+library('tidyr')
+
+df_1 <- read.csv('Stroke dataset 1.csv', header = TRUE)
+
+df_2 <- read.csv('Stroke dataset 2.csv', header = TRUE)
+
+df_3 <- read.csv('Stroke dataset 3.csv', header = TRUE)
+
+#transform gender to 0 and 1 (male = 1, female = 0)
+
+df_1 <- transform(df_1, 'gender'= ifelse(gender=='Male', 1, 0))
+
+df_2 <- transform(df_2, 'gender'= ifelse(gender=='Male', 1, 0))
+
+# transform age values to be categorical
+
+df_1$age_category <- cut(df_1$age,
+                         breaks = c(18,24,29,34,39,44,49,54,59,64,69,74,79,130),
+                         labels = c('1','2','3','4','5','6','7','8','9','10','11','12','13'))
+                         
+
+df_2$age_category <- cut(df_2$age,
+                         breaks = c(18,24,29,34,39,44,49,54,59,64,69,74,79,130),
+                         labels = c('1','2','3','4','5','6','7','8','9','10','11','12','13'))
+
+
+# only keeps records where age > 17. 
+df_1 <- dplyr::filter(df_1,age > 17)
+df_2 <- dplyr::filter(df_2,age > 17)
+
+
+# create subset of the data frames
+df_1.subset <- subset(df_1, select = c(age_category, gender, bmi, stroke))
+df_2.subset <- subset(df_2, select = c(age_category, gender, bmi, stroke))
+df_3.subset <- subset(df_3, select = c(Age, Sex, BMI, Stroke))
+
+#Rename columns for subsets
+names(df_3.subset)[names(df_3.subset) == "Age"] <- "age_category"
+names(df_3.subset)[names(df_3.subset) == "Sex"] <- "gender"
+names(df_3.subset)[names(df_3.subset) == "BMI"] <- "bmi"
+names(df_3.subset)[names(df_3.subset) == "Stroke"] <- "stroke"
+
+#union data sets
+df_main1 <- rbind(df_1.subset, df_2.subset, df_3.subset)
+
+# Remove records that has N/A values 
+df_main1 <- na.omit(df_main1)
+
+
+# convert age_category column to numeric
+df_main1$age_category = as.numeric(as.character(df_main1$age_category))
+
+df_main1f <- df_main1
+
+#convert stroke column in df_main1f to numeric 
+df_main1f$stroke = as.numeric(as.character(df_main1$stroke))
+
+
+#create subsets for the first two data sets with different variables 
+
+df_1.subset2 = subset(df_1, select = c(age, gender, hypertension, heart_disease, avg_glucose_level, stroke))
+
+df_2.subset2 = subset(df_2, select = c(age, gender, hypertension, heart_disease, avg_glucose_level, stroke))
+
+
+# union the 2nd subsets 
+
+df_main2 <- rbind(df_1.subset2, df_2.subset2)
+
+df_main2f <- transform(df_main2, "stroke"= ifelse(stroke=="Yes", "1", "0"))
+
+
+
+
+kable(head(df_main1),caption = "Three Combined Data sets")
+#str(df_main1)
+#summary(df_main1)
+
+kable(head(df_main2),caption = "Two Combined Data sets")
+#str(df_main2)
+#summary(df_main2)
+
+
+```
+
+
+
+
+
+
+
+
+
+
+**Data Set 1 & Data Set 2 Graphs**
+
+```{r, echo=FALSE}
+library('ggplot2')
+library('vcd')
+
+# DF1 
+# Show mosaic for age_category vs stroke from df1 
+age_category_table <- structable(~ age_category + stroke, data=df_main1f)
+
+mosaic(age_category_table, 
+       main="Data Set 1: Age_category vs. Stroke", 
+       pop=FALSE)
+
+age_category_table
+
+
+
+
+
+# mosaic of gender vs stroke from df1 
+gender_table <- structable(~ gender + stroke, data=df_main1f)
+mosaic(gender_table, 
+       main="Data Set 1: Gender vs. Stroke", 
+       pop=FALSE,      
+       set_labels=list(gender = c("F", "M"), 
+                       stroke = c("No", "Yes")
+                       )
+        )
+labeling_cells(text = as.table(gender_table), margin = -10)(as.table(gender_table))
+gender_table
+
+
+# plot stroke vs BMI from df1 
+ggplot(df_main1f, aes(x=stroke, y=bmi)) + 
+    geom_point() + 
+    geom_boxplot() + 
+    xlab("Stroke") + 
+    ylab("BMI") +
+    ggtitle("Data Set 1: Stroke vs BMI") + 
+    theme(plot.title = element_text(hjust = 0.5))
+
+
+
+
+
+# DF 2 
+# mosaic of heart disease vs stroke from df2
+heart_disease_table <- structable(~ heart_disease + stroke, data=df_main2f)
+
+mosaic(heart_disease_table, 
+       main="Data Set 2: Heart Disease vs. Stroke", 
+       pop=FALSE,
+       set_labels=list(heart_disease = c("No", "Yes"), 
+                       stroke = c("No", "Yes")
+                       )
+       )
+labeling_cells(text = as.table(heart_disease_table), margin = -10)(as.table(heart_disease_table))
+
+heart_disease_table
+
+
+# mosaic of hypertension vs stroke from df2
+hypertension_table <- structable(~ hypertension + stroke, data=df_main2f)
+
+mosaic(hypertension_table, 
+       main="Data Set 2: Hypertension vs. Stroke", 
+       pop=FALSE,
+       set_labels=list(hypertension= c("No", "Yes"), 
+                       stroke = c("No", "Yes")
+                       )
+       )
+labeling_cells(text = as.table(hypertension_table), margin = -10)(as.table(hypertension_table))
+
+hypertension_table
+
+
+
+# plot stroke vs avg_glucose_level from df2 
+
+ggplot(df_main2f, aes(x=stroke, y=avg_glucose_level)) + 
+    geom_point() + 
+    geom_boxplot() + 
+    xlab("Stroke") + 
+    ylab("avg_glucose_level") +
+    ggtitle("Data Set 2: Stroke vs Avg_Glucose_Level") + 
+    theme(plot.title = element_text(hjust = 0.5))
+
+# plot stroke vs age from df2 
+ggplot(df_main2f, aes(x=stroke, y=age)) + 
+    geom_point() + 
+    geom_boxplot() + 
+    xlab("Stroke") + 
+    ylab("Age") +
+    ggtitle("Data Set 2: Stroke vs Age") + 
+    theme(plot.title = element_text(hjust = 0.5))
+```
+
+
+
+
+
+
+
+
+**Perform Correlation Tests on df_main1 and df_main2**
+
+
+```{r, echo=FALSE}
+library('knitr')
+library('class')
+library('caTools')
+
+
+kable(cor(df_main1),caption = "Main DF Correlation")
+
+kable(cor(df_main2),caption = "Main DF 2 Correlation")
+
+
+
+#split data to train and test for df_main1
+data_split <- sample(1:nrow(df_main1), 0.8 * nrow(df_main1))
+train_main1 <- df_main1[data_split,]
+test_main1 <- df_main1[-data_split,]
+
+
+
+
+#split data to train and test for df_main2 --used a different method
+split <- sample.split(df_main2, SplitRatio=.8)
+train_main2 <- subset(df_main2, split == "TRUE")
+test_main2 <- subset(df_main2, split == "FALSE")
+
+
+```
+
+
+
+
+
+
+**Logistic Regression of df_main1 and df_main2**
+
+```{r, echo=FALSE}
+main1_glm <- glm(stroke ~ . , family = binomial , data = df_main1)
+summary(main1_glm)
+
+
+#df_main2
+
+main2_glm <- glm(stroke ~ . , family = binomial , data = df_main2)
+summary(main2_glm)
+
+
+```
+
+
+
+
+
+
+
+
+
+**Accuracy of Logistic Regression of df_main1 and df_main2**
+
+```{r, echo=FALSE}
+#Using test data to calculate accuracy of model with all variables
+result_main1 <- predict(main1_glm, train_main1, type="response")
+conf_matrix_main1_glm <- table(Actual_Value = train_main1$stroke, Predicted_Value = result_main1 > 0.2)
+conf_matrix_main1_glm
+
+accuracy_main1_glm = (conf_matrix_main1_glm[[1,1]] + conf_matrix_main1_glm[[2,2]])/sum(conf_matrix_main1_glm) * 100
+
+accuracy_main1_glm
+
+
+#Do the same thing for df_main2 
+result_main2 <- predict(main2_glm, train_main2, type="response")
+conf_matrix_main2 <- table(Actual_Value=train_main2$stroke, Predicted_Value = result_main2 > 0.2)
+conf_matrix_main2
+
+accuracy_main2_glm = (conf_matrix_main2[[1,1]] + conf_matrix_main2[[2,2]])/sum(conf_matrix_main2) * 100
+
+accuracy_main2_glm
+
+```
+
+
+
+
+
+
+
+
+
+
+
+**Accuracy of KNN for df_main1 and df_main2)**
+
+
+
+```{r, echo=FALSE}
+
+#perform knn analysis using 3,5,10,15,20, and 25 as K
+
+#create vector for each k value 
+k <- c(3, 5, 10, 15, 20, 25)
+accuracy_vector <- c()
+
+
+for (n in k){
+
+train_knn_main1 <- knn(train=train_main1,
+                 test=test_main1,
+                 cl=train_main1$stroke,
+                 k=n)
+
+#create confusion matrix and calculate accuracy 
+
+accuracy_main1_knn <- sum(test_main1$stroke == train_knn_main1)/nrow(test_main1) * 100
+accuracy_main1_knn
+accuracy_vector <- c(accuracy_vector, accuracy_main1_knn)
+}
+
+main1_accuracy_df <- data.frame("K Value" = k, "Accuracy" = accuracy_vector)
+
+
+kable(head(main1_accuracy_df, 5),caption = "Main1 Data Accuracy")
+
+
+# Perform knn analysis for df_main2 using the square root of the number of samples as K
+
+
+train_knn_main2 <- knn(train=train_main2,
+                 test=test_main2,
+                 cl=train_main2$stroke,
+                 k=sqrt(nrow(train_main2)))
+
+#calculate accuracy 
+
+accuracy_main2_knn <- sum(test_main2$stroke == train_knn_main2)/nrow(test_main2) * 100
+accuracy_main2_knn
+
+```
+
+
+
+
+
+
+
+
+
+
+
+**INTRODUCTION**
+
+
+According to the CDC, stroke is the leading cause of death in the United States as well as a major contributing factor for other significant co-morbidities, ultimately resulting in morbidity and mortality. Stroke has a number of both modifiable and non-modifiable risk factors, which include age, gender, hypertension, heart disease, and diabetes. As the healthcare system continues to advance, it is important to have a better understanding of stroke and its underlying risk factors to help prevent future deaths.
+
+
+
+**PROBLEM STATEMENT**
+
+The goal is to better understand what are some of the determining factors or characteristics that can be contributing to stroke and other ischemic events. By being able to identify and understand how various predictors impact the likelihood of strokes, we can begin to implement various changes to an individuals lifestyle as needed in order to decrease the risk of stroke and improve overall population health. 
+
+
+
+**APPROACH**
+
+
+I started off by slicing my data into two main data frames. The first one containing data from all three data sets (age_category, gender, bmi, and stroke). The one caveat to this was that 2 out of my 3 data sets had the actual age of each individual, whereas my third data set grouped age into categories so I could not identify the exact age of each person. Therefore, I ended up creating an age_category column (using the same logic as my third data set) in the data frames from the first two data sets. This also means that I had to remove any records from data sets 1&2 that had individuals younger than 18. After having cleaned and transformed my data, I was able to union data from all 3 sources into my first main df. 
+
+The second main data frame I created only includes variables found in two of my sources of data (age, gender, hypertension, heart_disease, avg_glucose_level, and stroke). Now that I have my two main data frames, I visualized the data using mosaics and boxplots to see the predictors. Finally, I used logistic regression and KNN models to test the accuracy of my models. 
+
+
+
+**ANALYSIS**
+
+
+Based on the results, age/age_category has the highest association to stroke events while other characteristics such as gender and BMI have minimal impact. Older individuals have a higher risk of stroke when compared to their younger counterparts. 
+
+Taking a look into the results from the second data frame, hypertension, heart_disease, and avg_glucose_level have higher association but there were no variables that had a particularly high correlation to stroke. One thing to also take into consideration with the avg_glucose_level is that this variable had a more skewed distribution in patients who did have a stroke. It has a greater range compared to the other risk factors and has more outliers, which can contribute to a higher mean, compared to the patients in this variable that did not have a stroke, which ultimately could potentially display a higher correlation. 
+
+Logistic regression modeling was used and showed greater than 90% accuracy. I also used KNN in addition to that which supported the accuracy. 
+
+
+
+
+**LIMITATIONS**
+
+The data sets that I was working off of have some limitations. The sample sizes of my data sets varied and I am also unsure of how they went about their selection. There are a number of factors that contribute to our health and the risk of stroke. For example, diet is something that varies drastically depending on your location and lifestyle but that was not something I was able to measure or account for in this project. There are other variables that need to be considered if we want to really narrow down on stroke predictors. 
+
+
+
+**CONCLUSION**
+
+Although there are limitations, based on the results, age, heart_disease, and hypertension were some of the stronger predictors for stroke. In this case, logistic regression model was a viable method to predict stroke but the generalization and applicability of the results are low until we have a more well-rounded data set to work off of that includes people from around the world of different cultures, their health backgrounds, diets, and lifestyles. In conclusion, further and more thorough research needs to be done in order to be able to truly identify stroke predictors with confidence. 
+
+
