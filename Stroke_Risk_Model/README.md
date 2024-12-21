@@ -20,3 +20,7 @@ To reproduce this analysis:
 2. Open the `.Rmd` files in RStudio.
 3. Install the required R packages (if not already installed).
 4. Run the code chunks sequentially.
+
+
+---
+For access to this project repository, visit the [Stroke Risk Model Repository](https://github.com/KNguyenMS/KNguyenMS.github.io/tree/main/Stroke_Risk_Model).
