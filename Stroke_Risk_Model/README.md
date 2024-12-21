@@ -1,20 +1,22 @@
-# Stroke Risk Prediction Model
+# Stroke Risk Model
 
-This project explores and predicts the risk of stroke using data science techniques. It includes:
+This folder contains the code and data for the Stroke Risk Model project. 
 
-- **Exploratory Data Analysis (EDA)**: Insights into the dataset to identify patterns and relationships.
-- **Prediction Models**: Development and evaluation of machine learning models to predict stroke risk.
+## Contents
+- `Stroke Risk Exploratory Data Analysis.Rmd`: R Markdown file for exploratory data analysis.
+- `Stroke Risk Prediction Models.Rmd`: R Markdown file for stroke risk prediction.
 
-## Files
-- `Stroke Risk Exploratory Data Analysis.Rmd`: R Markdown file for EDA.
-- `Stroke Risk Prediction Models.Rmd`: R Markdown file for building and testing predictive models.
+## Required Files
+The following data files are required to run the R Markdown code in this project. These are stroke datasets sourced from Kaggle used for the purpose of this project:
+- `Stroke dataset 1.csv`
+- `Stroke dataset 2.csv`
+- `Stroke dataset 3.csv`
+
+Ensure these files are in the same directory as the R Markdown files before running the code.
 
 ## Instructions
-To view the analyses:
-1. Open the `.Rmd` files in RStudio.
-2. Knit the files to HTML or PDF for easier readability.
-
-## Highlights
-- **Data Cleaning**: Managed missing data and feature engineering.
-- **Visualization**: Used `ggplot2` for data visualization.
-- **Machine Learning Models**: Evaluated logistic regression and KNN. 
+To reproduce this analysis:
+1. Download the `.Rmd` and Excel files to your local system.
+2. Open the `.Rmd` files in RStudio.
+3. Install the required R packages (if not already installed).
+4. Run the code chunks sequentially.
