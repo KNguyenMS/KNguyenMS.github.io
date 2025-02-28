@@ -7,4 +7,5 @@ This project explores how logistic regression can be used to predict the likelih
 
 
 Step 1: Download the heart_disease_health_indicators_BRFSS2015.csv file
+
 Step 2: Run the ipynb file and run the code in snippets to recreate the analysis 
