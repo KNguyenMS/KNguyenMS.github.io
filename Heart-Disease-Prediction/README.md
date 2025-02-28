@@ -33,3 +33,6 @@ Follow these steps to run the model and reproduce the results:
 3. **Review the Results:**  
    - The notebook will generate summary statistics, model performance metrics, and visualizations.
    - Examine the ROC curve, confusion matrix, and feature importance plots.
+  
+
+For more details, visit the [Heart Disease Prediction Project Repository](https://github.com/KNguyenMS/KNguyenMS.github.io/tree/main/Heart-Disease-Prediction).
